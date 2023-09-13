@@ -57,14 +57,8 @@ def move_assets_if_not_exists():
     intrinsics_json_path = os.path.join(git_dir, 'assets')
 
     if not os.path.exists(intrinsics_json_path):
-        try:
-            if not os.path.exists(git_dir):
-                os.mkdir(git_dir)
-            os.mkdir(intrinsics_json_path)
-            print(intrinsics_json_path)
-            shutil.copy(os.path.join('.','assets'), intrinsics_json_path)
-        except PermissionError:
-            nop = 0
+        os.mkdir(intrinsics_json_path)
+        shutil.copy(os.path.join('.','assets'), intrinsics_json_path)
 
 def download_model_if_doesnt_exist(model_name):
     """If pretrained kitti model doesn't exist, download and unzip it
