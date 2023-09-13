@@ -8,7 +8,7 @@ import os
 import hashlib
 import zipfile
 from six.moves import urllib
-
+import shutil
 def readlines(filename):
     """Read all the lines in a text file and return as a list
     """
@@ -53,6 +53,19 @@ model_subfolder_names = {
     "CityScapes_512_192": "CityScapes_MR"
 }
 
+def move_assets_if_not_exists():
+    intrinsics_json_path = os.path.join(git_dir, 'assets')
+
+    if not os.path.exists(intrinsics_json_path):
+        try:
+            if not os.path.exists(git_dir):
+                os.mkdir(git_dir)
+            os.mkdir(intrinsics_json_path)
+            print(intrinsics_json_path)
+            shutil.copy(os.path.join('.','assets'), intrinsics_json_path)
+        except PermissionError:
+            nop = 0
+
 def download_model_if_doesnt_exist(model_name):
     """If pretrained kitti model doesn't exist, download and unzip it
     """
@@ -67,7 +80,7 @@ def download_model_if_doesnt_exist(model_name):
         os.makedirs(manydepth_models_path)
 
     model_path = os.path.join(manydepth_models_path, model_name)
-    
+
     subfolder_name = model_subfolder_names[model_name]
 
     # see if we have the model already downloaded...

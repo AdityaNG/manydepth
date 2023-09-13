@@ -8,7 +8,7 @@ import matplotlib.cm as cm
 
 from .layers import transformation_from_parameters
 from .test_simple import load_and_preprocess_intrinsics, preprocess_image
-from .utils import download_model_if_doesnt_exist, manydepth_models_path, model_subfolder_names, git_dir
+from .utils import download_model_if_doesnt_exist, manydepth_models_path, model_subfolder_names, git_dir, move_assets_if_not_exists
 from . import networks
 
 MODEL_NAMES = [
@@ -19,22 +19,24 @@ MODEL_NAMES = [
 
 class manydepth:
 
-    def __init__(self, model_name=MODEL_NAMES[0], no_cuda=False, intrinsics_json_path=os.path.join(git_dir, 'assets/test_sequence_intrinsics.json'), mode='multi') -> None:
+    def __init__(self, model_name=MODEL_NAMES[0], no_cuda=False, intrinsics_json_path=os.path.join(git_dir, os.path.join('assets','test_sequence_intrinsics.json')), mode='multi') -> None:
         assert model_name in MODEL_NAMES, "Invalid Model Name"
         assert mode in ('multi', 'mono'), "Invalid Model Name"
 
         self.mode = mode
-        
+
         if torch.cuda.is_available() and not no_cuda:
             self.device = torch.device("cuda")
             print("GPU Visible")
         else:
             self.device = torch.device("cpu")
             print("GPU not visible; CPU mode")
-        
+
         # TODO download_model_if_doesnt_exist
         download_model_if_doesnt_exist(model_name=model_name)
         self.model_path = os.path.join(manydepth_models_path, model_name, model_subfolder_names[model_name])
+
+        move_assets_if_not_exists()
 
         print("-> Loading model from ", self.model_path)
 
@@ -82,7 +84,7 @@ class manydepth:
             self.pose_enc.cuda()
             self.pose_dec.cuda()
 
-        
+
         self.K, self.invK = load_and_preprocess_intrinsics(intrinsics_json_path,
                                              resize_width=self.encoder_dict['width'],
                                              resize_height=self.encoder_dict['height'])
@@ -97,9 +99,9 @@ class manydepth:
 
         input_image, original_size = preprocess_image(input_image, resize_width=self.encoder_dict['width'], resize_height=self.encoder_dict['height'])
         source_image, _ = preprocess_image(source_image, resize_width=self.encoder_dict['width'], resize_height=self.encoder_dict['height'])
-        
-        
-        
+
+
+
         with torch.no_grad():
 
             # Estimate poses
@@ -148,4 +150,3 @@ class manydepth:
                 #print("-> Saved output image to {}".format(name_dest_im))
 
         return toplot
-        
